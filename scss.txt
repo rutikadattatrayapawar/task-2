@@ -1,0 +1,28 @@
+const jwt = require('jsonwebtoken');
+
+function authenticate(req, res, next) {
+  // Get the authorization header from the request
+  const authHeader = req.headers['authorization'];
+
+  // Extract the token from the header
+  const token = authHeader && authHeader.split(' ')[1];
+
+  // Verify the token
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // Set the user object on the request for future middleware to use
+    req.user = user;
+
+    // Call the next middleware in the chain
+    next();
+  });
+}
+
+module.exports = { authenticate };
